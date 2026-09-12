@@ -15,16 +15,16 @@ const registerUser = asyncHandler( async(req,res)=>{
     // check for user creation
     // return response
     
-    const {username , fullname , email , password} = req.body
+    const {username , fullName , email , password} = req.body
     console.log("email: " , email)
 
-    if([username, fullname , email, password].some((fields)=>{
-        fields?.trim() ===''
+    if([username, fullName , email, password].some((fields)=>{
+        return fields?.trim() ===''
     })){
         throw new apiError(404, "All fields are requried")
     }
 
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or : [{username} , {email}]
     })
     if(existedUser){
@@ -45,7 +45,7 @@ const registerUser = asyncHandler( async(req,res)=>{
     }
 
     const user = await User.create({
-        fullname,
+        fullName,
         avatar: avatar.url,
         coverImage : coverImage?.url || "",
         email,
@@ -56,12 +56,12 @@ const registerUser = asyncHandler( async(req,res)=>{
     const createdUser = await User.findById(user._id).select(
         "-password -refreshToken"
     )
-    if(createdUser){
+    if(!createdUser){
         throw new apiError(500, "Something went wrong while registering the User")
     }
 
     return res.status(201).json(
-        new apiResponse(200, createdUser , message = 'User registered Successfully')
+        new apiResponse(200, createdUser ,'User registered Successfully')
     )
 
 })

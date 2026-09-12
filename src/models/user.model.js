@@ -1,7 +1,7 @@
 import mongoose , {Schema} from 'mongoose'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-
+import {Video} from './video.model.js'
 const userSchema = new Schema({
     username : {
         type : String,
@@ -26,7 +26,7 @@ const userSchema = new Schema({
     },
     avatar : {
         type: String, // Cloudinary URL
-        requiered: true,
+        required: true,
     },
     coverImage:{
         type: String, // Cloudinary URL
@@ -34,7 +34,7 @@ const userSchema = new Schema({
     watchHistroy: [
         {
             type : Schema.Types.ObjectId,
-            ref : video
+            ref : "Video"
         }
     ],
     password : {
@@ -50,11 +50,11 @@ const userSchema = new Schema({
     timestamps: true
 })
 
-userSchema.pre("save", function async(next){
-    if(!this.isModified("password")) return next()
-    this.password = bcrypt.hash(this.password, 10)
-    next()
-})
+userSchema.pre("save", async function () {
+    if (!this.isModified("password")) return;
+
+    this.password = await bcrypt.hash(this.password, 10);
+});
 
 userSchema.methods.isPasswordCorrect = async function(password){
     return await bcrypt.compare(password, this.password)
